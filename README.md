@@ -1,0 +1,1 @@
+Modern AI Kundli Milan is a web-based application that provides instant marriage compatibility analysis using traditional Ashta Koota (36 Guna) matching combined with AI-generated insights.
