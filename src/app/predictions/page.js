@@ -218,20 +218,24 @@ export default function PredictionsPage() {
                                 </div>
                             </div>
 
-                            {/* Prediction Cards Grid */}
-                            <div className="grid md:grid-cols-2 gap-6 mb-6">
+                            {/* Prediction Cards — Full Width for Detail */}
+                            <div className="space-y-6 mb-6">
                                 {/* Career */}
                                 <div className="animate-fade-in-up-delay-1">
                                     <PredictionCard
                                         title="Career Outlook"
                                         icon="💼"
                                         accentColor="orange"
+                                        detailedSummary={result.career.detailedSummary}
                                         items={[
                                             { icon: result.career.growth.icon, label: 'Career Growth', value: result.career.growth.value },
-                                            { icon: result.career.jobChange.icon, label: 'Job Change', value: result.career.jobChange.value, subtext: result.career.jobChange.timing },
-                                            { icon: result.career.promotion.icon, label: 'Promotion', value: result.career.promotion.value },
+                                            { icon: result.career.promotion.icon, label: 'Promotion & Recognition', value: result.career.promotion.value },
                                             { icon: result.career.businessStability.icon, label: 'Business Stability', value: result.career.businessStability.value },
-                                            { icon: result.career.skillAdvice.icon, label: 'Skill Development', value: result.career.skillAdvice.value },
+                                            { icon: result.career.skillAdvice.icon, label: 'Skill Development Advice', value: result.career.skillAdvice.value },
+                                            ...(result.career.bestMonths ? [{ icon: result.career.bestMonths.icon, label: 'Best Career Months', value: result.career.bestMonths.value }] : []),
+                                            ...(result.career.networking ? [{ icon: result.career.networking.icon, label: 'Networking & Connections', value: result.career.networking.value }] : []),
+                                            ...(result.career.workLifeBalance ? [{ icon: result.career.workLifeBalance.icon, label: 'Work-Life Balance', value: result.career.workLifeBalance.value }] : []),
+                                            ...(result.career.quarterlyOutlook ? [{ icon: result.career.quarterlyOutlook.icon, label: 'Quarterly Career Outlook', value: result.career.quarterlyOutlook.value }] : []),
                                         ]}
                                     />
                                 </div>
@@ -242,12 +246,16 @@ export default function PredictionsPage() {
                                         title="Financial Outlook"
                                         icon="💰"
                                         accentColor="green"
+                                        detailedSummary={result.financial.detailedSummary}
                                         items={[
-                                            { icon: result.financial.incomeStability.icon, label: 'Income', value: result.financial.incomeStability.value },
+                                            { icon: result.financial.incomeStability.icon, label: 'Income Stability', value: result.financial.incomeStability.value },
                                             { icon: result.financial.unexpectedExpenses.icon, label: 'Unexpected Expenses', value: result.financial.unexpectedExpenses.value, subtext: result.financial.unexpectedExpenses.timing },
-                                            { icon: result.financial.investment.icon, label: 'Investment Advice', value: result.financial.investment.value },
+                                            { icon: result.financial.investment.icon, label: 'Investment Strategy', value: result.financial.investment.value },
                                             { icon: result.financial.savingsTrend.icon, label: 'Savings Trend', value: result.financial.savingsTrend.value },
-                                            { icon: result.financial.luckyMonths.icon, label: 'Lucky Months', value: result.financial.luckyMonths.value },
+                                            { icon: result.financial.luckyMonths.icon, label: 'Favorable Financial Months', value: result.financial.luckyMonths.value },
+                                            ...(result.financial.propertyAdvice ? [{ icon: result.financial.propertyAdvice.icon, label: 'Property & Real Estate', value: result.financial.propertyAdvice.value }] : []),
+                                            ...(result.financial.debtManagement ? [{ icon: result.financial.debtManagement.icon, label: 'Debt & Loan Management', value: result.financial.debtManagement.value }] : []),
+                                            ...(result.financial.taxPlanning ? [{ icon: result.financial.taxPlanning.icon, label: 'Tax Planning', value: result.financial.taxPlanning.value }] : []),
                                         ]}
                                     />
                                 </div>
@@ -258,11 +266,15 @@ export default function PredictionsPage() {
                                         title="Relationship & Marriage"
                                         icon="❤️"
                                         accentColor="pink"
+                                        detailedSummary={result.relationship.detailedSummary}
                                         items={[
                                             { icon: result.relationship.harmony.icon, label: 'Relationship Harmony', value: result.relationship.harmony.value },
                                             { icon: result.relationship.marriageProspects.icon, label: 'Marriage Prospects', value: result.relationship.marriageProspects.value },
                                             { icon: result.relationship.emotionalBalance.icon, label: 'Emotional Balance', value: result.relationship.emotionalBalance.value },
                                             { icon: result.relationship.familyRelations.icon, label: 'Family Relations', value: result.relationship.familyRelations.value },
+                                            ...(result.relationship.socialCircle ? [{ icon: result.relationship.socialCircle.icon, label: 'Social Circle & Friendships', value: result.relationship.socialCircle.value }] : []),
+                                            ...(result.relationship.communication ? [{ icon: result.relationship.communication.icon, label: 'Communication & Expression', value: result.relationship.communication.value }] : []),
+                                            ...(result.relationship.romanticTiming ? [{ icon: result.relationship.romanticTiming.icon, label: 'Romantic Timing', value: result.relationship.romanticTiming.value }] : []),
                                         ]}
                                     />
                                 </div>
@@ -270,15 +282,19 @@ export default function PredictionsPage() {
                                 {/* Health */}
                                 <div className="animate-fade-in-up-delay-3">
                                     <PredictionCard
-                                        title="Health Overview"
+                                        title="Health & Wellness"
                                         icon="🧘"
                                         accentColor="blue"
+                                        detailedSummary={result.health.detailedSummary}
                                         items={[
                                             { icon: result.health.energyLevels.icon, label: 'Energy Levels', value: result.health.energyLevels.value },
-                                            { icon: result.health.stressLevels.icon, label: 'Stress Levels', value: result.health.stressLevels.value },
-                                            { icon: result.health.immunity.icon, label: 'Immunity', value: result.health.immunity.value },
+                                            { icon: result.health.stressLevels.icon, label: 'Stress Management', value: result.health.stressLevels.value },
+                                            { icon: result.health.immunity.icon, label: 'Immunity & Resistance', value: result.health.immunity.value },
                                             { icon: result.health.cautionPeriod.icon, label: 'Caution Period', value: result.health.cautionPeriod.value },
-                                            { icon: result.health.lifestyleAdvice.icon, label: 'Lifestyle Advice', value: result.health.lifestyleAdvice.value },
+                                            ...(result.health.mentalWellness ? [{ icon: result.health.mentalWellness.icon, label: 'Mental Wellness', value: result.health.mentalWellness.value }] : []),
+                                            ...(result.health.fitness ? [{ icon: result.health.fitness.icon, label: 'Fitness & Exercise', value: result.health.fitness.value }] : []),
+                                            ...(result.health.diet ? [{ icon: result.health.diet.icon, label: 'Diet & Nutrition', value: result.health.diet.value }] : []),
+                                            ...(result.health.sleep ? [{ icon: result.health.sleep.icon, label: 'Sleep & Recovery', value: result.health.sleep.value }] : []),
                                         ]}
                                     />
                                 </div>

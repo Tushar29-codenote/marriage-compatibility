@@ -305,3 +305,339 @@ export function generateCompatibilityAnalysis(result) {
         percentage,
     };
 }
+
+// ==================== MARRIAGE RISK ANALYSIS ====================
+export function generateMarriageRisk(result) {
+    const { totalScore, scores } = result;
+    const percentage = Math.round((totalScore / 36) * 100);
+
+    // Base risk = inverse of compatibility percentage
+    let riskScore = 100 - percentage;
+
+    // Dosha-based risk factors
+    const riskFactors = [];
+    const remedies = [];
+
+    // Nadi Dosha (most critical)
+    if (scores.nadi.score === 0) {
+        riskScore += 12;
+        riskFactors.push({
+            icon: '🔴',
+            factor: 'Nadi Dosha Detected',
+            severity: 'High',
+            detail: 'Same Nadi for both partners indicates potential health complications for progeny and disagreements in daily life. This is considered the most significant dosha in Kundli matching and carries 8 out of 36 total points.',
+        });
+        remedies.push('Nadi Dosha Nivaran Puja is recommended. Donate gold, grains, and clothes on an auspicious day. Maha Mrityunjaya Jaap (recitation) is highly beneficial.');
+        remedies.push('Visit Trimbakeshwar Temple (Nashik) or Mahakaleshwar Temple (Ujjain) for Nadi Dosha Shanti Puja.');
+    }
+
+    // Bhakoot Dosha
+    if (scores.bhakoot.score === 0) {
+        riskScore += 8;
+        riskFactors.push({
+            icon: '🟠',
+            factor: 'Bhakoot Dosha Present',
+            severity: 'Medium-High',
+            detail: 'Inauspicious Rashi combination (2/12, 5/9, or 6/8 relationship). This can affect financial stability, mutual love, and may create disagreements related to money, career choices, and family planning.',
+        });
+        remedies.push('Bhakoot Dosha Shanti Puja with Rudrabhishek is recommended. Chanting Vishnu Sahasranama together strengthens the bond.');
+        remedies.push('Both partners should observe fast on their respective Rashi lord\'s day for the first year of marriage.');
+    }
+
+    // Gana Dosha
+    if (scores.gana.score <= 1) {
+        riskScore += 6;
+        riskFactors.push({
+            icon: '🟡',
+            factor: 'Gana Incompatibility',
+            severity: 'Medium',
+            detail: 'Mismatched temperaments (Deva-Rakshasa or Manushya-Rakshasa combination). This can lead to frequent arguments, differing viewpoints on lifestyle, social behavior, and clashes in decision-making approaches.',
+        });
+        remedies.push('Regular couple meditation and conscious communication practices will help bridge the temperament gap. Ganesh Puja on Wednesdays is beneficial.');
+    }
+
+    // Yoni Dosha
+    if (scores.yoni.score <= 1) {
+        riskScore += 4;
+        riskFactors.push({
+            icon: '🟡',
+            factor: 'Low Yoni Compatibility',
+            severity: 'Medium',
+            detail: 'Physical and intimate compatibility needs attention. Different Yoni animals can create challenges in physical bonding, affection expression, and understanding each other\'s emotional-physical needs.',
+        });
+        remedies.push('Open communication about physical and emotional needs is essential. Consider relationship counseling to build understanding.');
+    }
+
+    // Graha Maitri issue
+    if (scores.grahaMaitri.score <= 1) {
+        riskScore += 3;
+        riskFactors.push({
+            icon: '🟡',
+            factor: 'Low Mental Compatibility',
+            severity: 'Medium',
+            detail: 'The ruling planets of both Rashis are not naturally friendly. This can create differences in thinking patterns, intellectual interests, and decision-making styles. Conscious effort to understand each other\'s perspective is needed.',
+        });
+        remedies.push('Engage in shared intellectual activities — reading together, discussing ideas, learning something new as a couple.');
+    }
+
+    // Manglik consideration (simplified)
+    const brideRashi = RASHIS.indexOf(result.brideRashi);
+    const groomRashi = RASHIS.indexOf(result.groomRashi);
+    const isMarsSign = (ri) => ri === 0 || ri === 7; // Aries or Scorpio = Mars-ruled
+    if (isMarsSign(brideRashi) !== isMarsSign(groomRashi) && (isMarsSign(brideRashi) || isMarsSign(groomRashi))) {
+        riskScore += 5;
+        riskFactors.push({
+            icon: '🔴',
+            factor: 'Manglik Consideration',
+            severity: 'Medium-High',
+            detail: 'One partner has Mars-dominant Rashi (Aries/Scorpio) while the other does not. This Mangal Dosha can cause aggression, dominance issues, and conflicts in married life if not addressed. Both partners being Manglik cancels the dosha.',
+        });
+        remedies.push('Mangal Dosha Shanti Puja is highly recommended. Kumbh Vivah (symbolic marriage to a pot/tree) before actual marriage is a traditional remedy.');
+        remedies.push('Visit Mangalnath Temple (Ujjain) for Mangal Dosha Nivaran. Wearing a coral (Moonga) gemstone after proper consultation can help.');
+    }
+
+    // Good factors reduce risk
+    if (scores.nadi.score >= 6) riskScore -= 5;
+    if (scores.bhakoot.score >= 5) riskScore -= 4;
+    if (scores.gana.score >= 4) riskScore -= 3;
+    if (totalScore >= 25) riskScore -= 8;
+
+    // Clamp risk between 5 and 85
+    riskScore = Math.max(5, Math.min(85, riskScore));
+
+    // Add positive notes if low risk
+    if (riskFactors.length === 0) {
+        riskFactors.push({
+            icon: '💚',
+            factor: 'No Major Doshas Detected',
+            severity: 'None',
+            detail: 'No significant doshas found in this Kundli matching. The planetary alignment is favorable for a harmonious and prosperous married life. Minor challenges are part of every relationship and can be easily navigated with mutual respect and understanding.',
+        });
+        remedies.push('No specific remedies needed. Maintain mutual respect, regular communication, and shared spiritual practices for a blessed married life.');
+    }
+
+    // Risk level label
+    let riskLevel, riskColor;
+    if (riskScore <= 20) { riskLevel = 'Very Low Risk'; riskColor = 'green'; }
+    else if (riskScore <= 35) { riskLevel = 'Low Risk'; riskColor = 'green'; }
+    else if (riskScore <= 50) { riskLevel = 'Moderate Risk'; riskColor = 'yellow'; }
+    else if (riskScore <= 65) { riskLevel = 'High Risk'; riskColor = 'orange'; }
+    else { riskLevel = 'Very High Risk'; riskColor = 'red'; }
+
+    // Generate detailed "What Could Go Wrong" warnings for moderate/high risk
+    const consequences = [];
+    if (riskScore > 35) {
+        // Relationship consequences
+        if (scores.gana.score <= 1) {
+            consequences.push({
+                category: 'Relationship & Communication',
+                icon: '💔',
+                severity: riskScore > 60 ? 'Critical' : 'Serious',
+                issues: [
+                    'Frequent arguments over daily decisions — from household matters to social commitments. The Deva-Rakshasa or contrasting Gana combination creates fundamentally different approaches to life that clash regularly.',
+                    'One partner may feel dominated or unheard, leading to suppressed resentment that builds over time. This can manifest as passive-aggressive behavior, emotional withdrawal, or sudden explosive conflicts.',
+                    'Different social temperaments may cause embarrassment or friction in public settings — one partner may be outgoing while the other is reserved, leading to misunderstandings about social boundaries.',
+                    'Decision-making becomes a battleground rather than a partnership. Major life decisions (home purchase, children, career moves) may become sources of prolonged disagreement and stress.',
+                ],
+            });
+        }
+        if (scores.yoni.score <= 1) {
+            consequences.push({
+                category: 'Physical & Intimate Life',
+                icon: '😞',
+                severity: 'Serious',
+                issues: [
+                    'Physical intimacy may feel unsatisfying or disconnected for one or both partners. Different Yoni energies create mismatched expectations around affection, frequency, and emotional connection during intimate moments.',
+                    'One partner may feel emotionally neglected while the other feels pressured — this imbalance can create a growing emotional distance that affects all aspects of the relationship.',
+                    'Over time, physical disconnect may lead one or both partners to seek emotional validation outside the marriage, creating trust issues and potential infidelity concerns.',
+                ],
+            });
+        }
+
+        // Financial consequences
+        if (scores.bhakoot.score === 0) {
+            consequences.push({
+                category: 'Financial & Material Life',
+                icon: '💸',
+                severity: riskScore > 60 ? 'Critical' : 'Serious',
+                issues: [
+                    'Financial disagreements are highly likely — different spending habits, saving priorities, and investment philosophies will create ongoing tension. One partner may be a saver while the other is a spender.',
+                    'Bhakoot Dosha can attract unexpected financial setbacks — job losses, business failures, or large unplanned expenses that strain the household budget and increase stress.',
+                    'Property disputes or inheritance complications may arise within the extended family, creating legal or emotional burdens that test the marriage.',
+                    'Career conflicts are possible — one partner\'s job relocation or career ambition may clash with the other\'s stability needs, forcing difficult compromises.',
+                ],
+            });
+        }
+
+        // Health consequences
+        if (scores.nadi.score === 0) {
+            consequences.push({
+                category: 'Health & Progeny',
+                icon: '🏥',
+                severity: 'Critical',
+                issues: [
+                    'Nadi Dosha is the most serious concern in Vedic astrology for marriage. Same Nadi (Adi-Adi, Madhya-Madhya, or Antya-Antya) indicates potential genetic incompatibilities that may affect children\'s health.',
+                    'Higher likelihood of complications during pregnancy, childbirth, or early childhood health issues for offspring. Medical consultation alongside astrological remedies is strongly recommended.',
+                    'Both partners may experience recurring health issues — chronic fatigue, immunity problems, or stress-related ailments that worsen when living together due to similar constitutional weaknesses.',
+                    'Mental health impact is significant — anxiety, depression, or emotional instability may surface within the first 2-3 years of marriage, particularly if other doshas are also present.',
+                ],
+            });
+        }
+
+        // Family & Social consequences
+        if (scores.grahaMaitri.score <= 1 || scores.vashya.score <= 0.5) {
+            consequences.push({
+                category: 'Family & Social Harmony',
+                icon: '👨‍👩‍👧‍👦',
+                severity: 'Serious',
+                issues: [
+                    'In-law relationships may be strained from the beginning. Cultural, lifestyle, or value differences between the two families can create persistent friction that spills into the couple\'s daily life.',
+                    'Social isolation is a risk — the couple may struggle to build a shared social circle, leading to loneliness and over-dependence on the partner for all emotional needs.',
+                    'Children may be affected by parental conflicts — inconsistent parenting approaches, arguments in front of children, or using children as mediators can impact their emotional development.',
+                    'Extended family events (festivals, weddings, gatherings) may become sources of stress rather than joy, as navigating two different family dynamics becomes exhausting.',
+                ],
+            });
+        }
+
+        // Emotional & Mental consequences
+        if (riskScore > 50) {
+            consequences.push({
+                category: 'Emotional & Mental Wellbeing',
+                icon: '🧠',
+                severity: riskScore > 65 ? 'Critical' : 'Serious',
+                issues: [
+                    'Chronic emotional stress from unresolved conflicts can lead to anxiety, insomnia, and depression in one or both partners. The constant state of tension erodes mental peace and life satisfaction.',
+                    'Loss of individual identity — in trying to "make it work," one partner may sacrifice their personal goals, hobbies, and friendships, leading to deep resentment and a sense of wasted years.',
+                    'Trust erosion over time — repeated conflicts, broken promises, or unmet expectations gradually destroy the foundation of trust, making reconciliation increasingly difficult.',
+                    'The emotional toll can manifest physically — stress-related health issues like hypertension, digestive problems, weight changes, hair loss, and weakened immunity are common in high-conflict marriages.',
+                    'Impact on professional life — marital stress often spills into work performance, leading to decreased productivity, missed opportunities, and strained professional relationships.',
+                ],
+            });
+        }
+
+        // Long-term outlook
+        if (riskScore > 50) {
+            consequences.push({
+                category: 'Long-term Marriage Outlook',
+                icon: '⏳',
+                severity: riskScore > 65 ? 'Critical' : 'Serious',
+                issues: [
+                    `With a risk level of ${riskScore}%, this marriage faces significant challenges that require dedicated effort from both partners. Without active intervention (counseling, remedies, communication work), the relationship may deteriorate within ${riskScore > 65 ? '2-4' : '4-7'} years.`,
+                    'The "honeymoon phase" may be shorter than average — underlying incompatibilities tend to surface once the initial excitement fades and daily life routines begin.',
+                    'Separation or divorce probability is elevated without proper remedies and conscious effort. However, many couples with similar charts have built successful marriages through dedication, professional guidance, and spiritual practices.',
+                    'If both partners are committed to growth and willing to seek help (couples therapy, Vedic remedies, family counseling), the prognosis improves significantly. The key is early intervention rather than waiting for problems to escalate.',
+                ],
+            });
+        }
+    }
+
+    return {
+        riskPercentage: riskScore,
+        riskLevel,
+        riskColor,
+        riskFactors,
+        remedies,
+        consequences,
+    };
+}
+
+// ==================== IDEAL PARTNER SUGGESTION ====================
+// Nakshatra starting letters (aksharas) for naming
+const NAKSHATRA_LETTERS = {
+    'Ashwini': ['Chu', 'Che', 'Cho', 'La'],
+    'Bharani': ['Lee', 'Lu', 'Le', 'Lo'],
+    'Krittika': ['A', 'Ee', 'U', 'Ea'],
+    'Rohini': ['O', 'Va', 'Vi', 'Vu'],
+    'Mrigashira': ['Ve', 'Vo', 'Ka', 'Ki'],
+    'Ardra': ['Ku', 'Gha', 'Ng', 'Chh'],
+    'Punarvasu': ['Ke', 'Ko', 'Ha', 'Hi'],
+    'Pushya': ['Hu', 'He', 'Ho', 'Da'],
+    'Ashlesha': ['Di', 'Du', 'De', 'Do'],
+    'Magha': ['Ma', 'Mi', 'Mu', 'Me'],
+    'Purva Phalguni': ['Mo', 'Ta', 'Ti', 'Tu'],
+    'Uttara Phalguni': ['Te', 'To', 'Pa', 'Pi'],
+    'Hasta': ['Pu', 'Sha', 'Na', 'Tha'],
+    'Chitra': ['Pe', 'Po', 'Ra', 'Ri'],
+    'Swati': ['Ru', 'Re', 'Ro', 'Taa'],
+    'Vishakha': ['Ti', 'Tu', 'Te', 'To'],
+    'Anuradha': ['Na', 'Ni', 'Nu', 'Ne'],
+    'Jyeshtha': ['No', 'Ya', 'Yi', 'Yu'],
+    'Mula': ['Ye', 'Yo', 'Bha', 'Bhi'],
+    'Purva Ashadha': ['Bhu', 'Dha', 'Pha', 'Dha'],
+    'Uttara Ashadha': ['Bhe', 'Bho', 'Ja', 'Ji'],
+    'Shravana': ['Khi', 'Khu', 'Khe', 'Kho'],
+    'Dhanishtha': ['Ga', 'Gi', 'Gu', 'Ge'],
+    'Shatabhisha': ['Go', 'Sa', 'Si', 'Su'],
+    'Purva Bhadrapada': ['Se', 'So', 'Da', 'Di'],
+    'Uttara Bhadrapada': ['Du', 'Tha', 'Jha', 'Da'],
+    'Revati': ['De', 'Do', 'Cha', 'Chi'],
+};
+
+// Compatible Rashi pairs based on elemental harmony
+const RASHI_COMPATIBILITY = {
+    0: [4, 8, 2, 6],   // Aries -> Leo, Sag, Gemini, Libra
+    1: [5, 9, 3, 11],  // Taurus -> Virgo, Cap, Cancer, Pisces
+    2: [6, 10, 0, 4],  // Gemini -> Libra, Aqua, Aries, Leo
+    3: [7, 11, 1, 5],  // Cancer -> Scorpio, Pisces, Taurus, Virgo
+    4: [0, 8, 2, 6],   // Leo -> Aries, Sag, Gemini, Libra
+    5: [1, 9, 3, 11],  // Virgo -> Taurus, Cap, Cancer, Pisces
+    6: [2, 10, 0, 8],  // Libra -> Gemini, Aqua, Aries, Sag
+    7: [3, 11, 1, 5],  // Scorpio -> Cancer, Pisces, Taurus, Virgo
+    8: [0, 4, 2, 6],   // Sag -> Aries, Leo, Gemini, Libra
+    9: [1, 5, 3, 11],  // Cap -> Taurus, Virgo, Cancer, Pisces
+    10: [2, 6, 0, 8],   // Aqua -> Gemini, Libra, Aries, Sag
+    11: [3, 7, 1, 5],   // Pisces -> Cancer, Scorpio, Taurus, Virgo
+};
+
+export function generateIdealPartner(personRashi, personNakshatra) {
+    const rashiIndex = RASHIS.indexOf(personRashi);
+    if (rashiIndex === -1) return null;
+
+    const compatibleRashis = RASHI_COMPATIBILITY[rashiIndex];
+    const personElement = ['Fire', 'Earth', 'Air', 'Water', 'Fire', 'Earth', 'Air', 'Water', 'Fire', 'Earth', 'Air', 'Water'][rashiIndex];
+
+    // Get compatible Nakshatras and their name letters
+    const suggestions = compatibleRashis.map(cri => {
+        const rashi = RASHIS[cri];
+        const element = ['Fire', 'Earth', 'Air', 'Water', 'Fire', 'Earth', 'Air', 'Water', 'Fire', 'Earth', 'Air', 'Water'][cri];
+        const lord = RASHI_LORDS[cri];
+        // Nakshatras belonging to this rashi
+        const nakshatras = [];
+        for (let n = 0; n < 27; n++) {
+            if (getNakshatraRashi(n) === cri) {
+                nakshatras.push({
+                    name: NAKSHATRAS[n],
+                    letters: NAKSHATRA_LETTERS[NAKSHATRAS[n]] || [],
+                });
+            }
+        }
+        // Compatibility reason
+        let reason;
+        const sameElement = personElement === element;
+        if (sameElement) reason = `Same ${element} element creates natural understanding, shared energy, and instinctive harmony.`;
+        else if ((personElement === 'Fire' && element === 'Air') || (personElement === 'Air' && element === 'Fire'))
+            reason = 'Fire and Air elements fuel each other — passionate, dynamic, and intellectually stimulating partnership.';
+        else if ((personElement === 'Earth' && element === 'Water') || (personElement === 'Water' && element === 'Earth'))
+            reason = 'Earth and Water elements nurture each other — stable, supportive, and emotionally deep connection.';
+        else reason = `${personElement} and ${element} elements complement each other, bringing balance and growth to the relationship.`;
+
+        // Collect all starting letters
+        const allLetters = nakshatras.flatMap(n => n.letters);
+
+        return {
+            rashi,
+            element,
+            lord,
+            nakshatras,
+            allLetters: [...new Set(allLetters)],
+            reason,
+            compatibility: sameElement ? 'Excellent' : 'Very Good',
+        };
+    });
+
+    return {
+        personRashi,
+        personElement,
+        suggestions,
+    };
+}

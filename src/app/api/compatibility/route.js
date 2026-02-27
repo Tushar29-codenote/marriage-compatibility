@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateGunaMilan, generateCompatibilityAnalysis } from '@/lib/gunaMilan';
+import { calculateGunaMilan, generateCompatibilityAnalysis, generateMarriageRisk, generateIdealPartner } from '@/lib/gunaMilan';
 
 export async function POST(request) {
     try {
@@ -20,6 +20,13 @@ export async function POST(request) {
 
         // Generate compatibility analysis
         const analysis = generateCompatibilityAnalysis(result);
+
+        // Generate marriage risk analysis
+        const marriageRisk = generateMarriageRisk(result);
+
+        // Generate ideal partner suggestions for both
+        const brideIdealPartner = generateIdealPartner(result.brideRashi, result.brideNakshatra);
+        const groomIdealPartner = generateIdealPartner(result.groomRashi, result.groomNakshatra);
 
         return NextResponse.json({
             success: true,
@@ -48,6 +55,11 @@ export async function POST(request) {
                 },
                 kootas: Object.values(result.scores),
                 analysis,
+                marriageRisk,
+                idealPartner: {
+                    bride: brideIdealPartner,
+                    groom: groomIdealPartner,
+                },
             },
         });
     } catch (error) {
